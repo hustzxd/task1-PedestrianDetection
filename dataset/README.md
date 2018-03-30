@@ -10,6 +10,8 @@
 
 > [homepage](http://www.vision.caltech.edu/Image_Datasets/CaltechPedestrians/)
 
+> [convert tool](https://github.com/hizhangp/caltech-pedestrian-converter)
+
 ### DukeMTMC-reID
 
 > [github.repo](https://github.com/layumi/DukeMTMC-reID_evaluation)
