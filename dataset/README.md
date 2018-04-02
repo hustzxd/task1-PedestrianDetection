@@ -12,6 +12,12 @@
 
 > [convert tool](https://github.com/hizhangp/caltech-pedestrian-converter)
 
+[img1](mini_image_anno/img10000161.jpg)
+[img2](mini_image_anno/img10000188.jpg)
+[img3](mini_image_anno/img10000290.jpg)
+[img4](mini_image_anno/img10001019.jpg)
+[img4](mini_image_anno/img10001031.jpg)
+
 ### DukeMTMC-reID
 
 > [github.repo](https://github.com/layumi/DukeMTMC-reID_evaluation)

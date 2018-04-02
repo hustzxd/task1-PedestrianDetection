@@ -11,10 +11,12 @@
 
 import struct
 import os
-import cPickle
+import json
 import time
 from scipy.io import loadmat
 from collections import defaultdict
+# debug
+import pdb
 
 
 def read_seq(path):
@@ -76,8 +78,8 @@ def read_vbb(path):
     data = {}
     data['nFrame'] = nFrame
     data['maxObj'] = maxObj
-    data['log'] = log.tolist()
-    data['logLen'] = logLen
+    # data['log'] = log.tolist()
+    # data['logLen'] = logLen
     data['altered'] = altered
     data['frames'] = defaultdict(list)
 
@@ -106,7 +108,7 @@ def read_vbb(path):
                 datum['init'] = int(objInit[datum['id']])
 
                 data['frames'][frame_id].append(datum)
-
+    pdb.set_trace()
     return data
 
 
@@ -114,22 +116,22 @@ if __name__ == '__main__':
     # directory to store data
     dir_path = './Caltech/data'
     # phase can be 'train_', 'test_' or 'val_'
-    phase = 'train_'
+    phase = 'test_'
     # num ranges from 0~11
     # num = [0, 10]
 
     time_flag = time.time()
     # img_save_path = os.path.join(dir_path, phase + 'images')
-    anno_save_path = os.path.join(dir_path, phase + 'annotations.pkl')
+    anno_save_path = os.path.join(dir_path, phase + 'annotations.json')
     # if os.path.exists(img_save_path):
     #     raise KeyError('Already exists : {}'.format(img_save_path))
     # else:
-        # os.mkdir(img_save_path)
+    #     os.mkdir(img_save_path)
     # print 'Images will be saved to {}'.format(img_save_path)
     print 'Annotations will be saved to {}'.format(anno_save_path)
 
     #  convert .seq file into .jpg
-    # for i in range(10):
+    # for i in range(10, 11):
     #     img_set_path = os.path.join(dir_path, 'set{:02}'.format(i))
     #     assert os.path.exists(
     #         img_set_path), 'Not exists: '.format(img_set_path)
@@ -147,7 +149,7 @@ if __name__ == '__main__':
     # convert .vbb file into .pkl
     # example: anno['00']['00']['frames'][0][0]['pos']
     anno = defaultdict(dict)
-    for i in range(10):
+    for i in range(10, 11):
         anno['{:02}'.format(i)] = defaultdict(dict)
         anno_set_path = os.path.join(dir_path, 'annotations',
                                      'set{:02}'.format(i))
@@ -159,7 +161,7 @@ if __name__ == '__main__':
             anno['{:02}'.format(i)][j[2:4]] = read_vbb(anno_path)
 
     with open(anno_save_path, 'wb') as f:
-        cPickle.dump(anno, f)
+        json.dump(anno, f)
 
     print 'Annotations have been saved.'
 
