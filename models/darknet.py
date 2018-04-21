@@ -8,10 +8,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 import utils.network as net_utils
-import cfgs.config as cfg
-from layers.reorg.reorg_layer import ReorgLayer
 from utils.cython_bbox import bbox_ious, anchor_intersections
 from utils.cython_yolo import yolo_to_bbox
+import cfgs.config as cfg
+from layers.reorg_layer import ReorgLayer
 from functools import partial
 
 from multiprocessing import Pool

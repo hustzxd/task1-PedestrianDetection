@@ -15,23 +15,21 @@ import torch.utils.data.distributed
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 from torch.autograd import Variable
-import ipdb
-from yolo2.darknet import darknet19
-# import models
+
+import models
 # import torchvision.models as models
 
+import ipdb
 from tensorboardX import SummaryWriter
 
 import platform
+
 print('python version: {}'.format(platform.python_version()))
 print('PyTorch version: {}'.format(torch.__version__))
 
-
-# model_names = sorted(name for name in models.__dict__
-#     if name[0].islower() and not name.startswith("__")
-#     and callable(models.__dict__[name]))
-
-model_names = ['darknet19']
+model_names = sorted(name for name in models.__dict__
+    if name[0].islower() and not name.startswith("__")
+    and callable(models.__dict__[name]))
 
 parser = argparse.ArgumentParser(description='PyTorch Object Detection Training')
 parser.add_argument('--data', '-d',  metavar='DIR', default='./data/ILSVRC2012',
