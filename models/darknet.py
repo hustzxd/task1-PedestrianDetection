@@ -6,17 +6,18 @@ import torch
 import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
-
-import utils.network as net_utils
-from utils.cython_bbox import bbox_ious, anchor_intersections
-from utils.cython_yolo import yolo_to_bbox
-import cfgs.config as cfg
-from layers.reorg_layer import ReorgLayer
 from functools import partial
+
+from .utils import network as net_utils
+from .utils.cython_bbox import bbox_ious, anchor_intersections
+from .utils.cython_yolo import yolo_to_bbox
+from .cfgs import config as cfg
+from .layers.reorg_layer import ReorgLayer
 
 from multiprocessing import Pool
 
 __all__ = ['Darknet19', 'darknet19']
+
 
 def _make_layers(in_channels, net_cfg):
     layers = []
@@ -172,7 +173,7 @@ class Darknet19(nn.Module):
         # stride*stride times the channels of conv1s
         self.reorg = ReorgLayer(stride=2)
         # cat [conv1s, conv3]
-        self.conv4, c4 = _make_layers((c1*(stride*stride) + c3), net_cfgs[7])
+        self.conv4, c4 = _make_layers((c1 * (stride * stride) + c3), net_cfgs[7])
 
         # linear
         out_channels = cfg.num_anchors * (cfg.num_classes + 5)
@@ -197,7 +198,7 @@ class Darknet19(nn.Module):
         conv1s_reorg = self.reorg(conv1s)
         cat_1_3 = torch.cat([conv1s_reorg, conv3], 1)
         conv4 = self.conv4(cat_1_3)
-        conv5 = self.conv5(conv4)   # batch_size, out_channels, h, w
+        conv5 = self.conv5(conv4)  # batch_size, out_channels, h, w
         global_average_pool = self.global_average_pool(conv5)
 
         # for detection
@@ -249,7 +250,8 @@ class Darknet19(nn.Module):
             self.iou_loss = nn.MSELoss(size_average=False)(iou_pred * iou_mask, _ious * iou_mask) / num_boxes  # noqa
 
             class_mask = class_mask.expand_as(prob_pred)
-            self.cls_loss = nn.MSELoss(size_average=False)(prob_pred * class_mask, _classes * class_mask) / num_boxes  # noqa
+            self.cls_loss = nn.MSELoss(size_average=False)(prob_pred * class_mask,
+                                                           _classes * class_mask) / num_boxes  # noqa
 
         return bbox_pred, iou_pred, prob_pred
 
@@ -288,7 +290,7 @@ class Darknet19(nn.Module):
         for i, start in enumerate(range(0, len(keys), 5)):
             if num_conv is not None and i >= num_conv:
                 break
-            end = min(start+5, len(keys))
+            end = min(start + 5, len(keys))
             for key in keys[start:end]:
                 list_key = key.split('.')
                 ptype = dest_src['{}.{}'.format(list_key[-2], list_key[-1])]
@@ -299,11 +301,13 @@ class Darknet19(nn.Module):
                     param = param.permute(3, 2, 0, 1)
                 own_dict[key].copy_(param)
 
+
 def darknet19(pretrained=True, weights='models/darknet19.weights.npz'):
     models = Darknet19()
     if pretrained:
         models.load_from_npz(weights)
     return models
+
 
 if __name__ == '__main__':
     net = Darknet19()

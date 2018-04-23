@@ -16,7 +16,7 @@ import time
 from scipy.io import loadmat
 from collections import defaultdict
 # debug
-import pdb
+import ipdb
 
 
 def read_seq(path):
@@ -108,61 +108,66 @@ def read_vbb(path):
                 datum['init'] = int(objInit[datum['id']])
 
                 data['frames'][frame_id].append(datum)
-    pdb.set_trace()
+    # ipdb.set_trace()
     return data
 
-
-if __name__ == '__main__':
-    # directory to store data
-    dir_path = './Caltech/data'
+def convert(phase='test_', num=[10, 11]):
     # phase can be 'train_', 'test_' or 'val_'
-    phase = 'test_'
+    # phase = 'test_'
     # num ranges from 0~11
     # num = [0, 10]
 
     time_flag = time.time()
     # img_save_path = os.path.join(dir_path, phase + 'images')
     anno_save_path = os.path.join(dir_path, phase + 'annotations.json')
-    # if os.path.exists(img_save_path):
-    #     raise KeyError('Already exists : {}'.format(img_save_path))
-    # else:
-    #     os.mkdir(img_save_path)
-    # print 'Images will be saved to {}'.format(img_save_path)
-    print 'Annotations will be saved to {}'.format(anno_save_path)
+    if os.path.exists(img_save_path):
+        raise KeyError('Already exists : {}'.format(img_save_path))
+    else:
+        os.mkdir(img_save_path)
+    print('Images will be saved to {}'.format(img_save_path))
+    print('Annotations will be saved to {}'.format(anno_save_path))
 
     #  convert .seq file into .jpg
-    # for i in range(10, 11):
-    #     img_set_path = os.path.join(dir_path, 'set{:02}'.format(i))
-    #     assert os.path.exists(
-    #         img_set_path), 'Not exists: '.format(img_set_path)
-    #     print 'Extracting images from set{:02} ...'.format(i)
-    #     for j in sorted(os.listdir(img_set_path)):
-    #         imgs_path = os.path.join(img_set_path, j)
-    #         imgs = read_seq(imgs_path)
-    #         for ix, img in enumerate(imgs):
-    #             img_name = 'img{:02}{}{:04}.jpg'.format(i, j[2:4], ix)
-    #             img_path = os.path.join(img_save_path, img_name)
-    #             open(img_path, 'wb+').write(img)
+    for i in range(num[0], num[1]):
+        img_set_path = os.path.join(dir_path, 'set{:02}'.format(i))
+        assert os.path.exists(
+            img_set_path), 'Not exists: '.format(img_set_path)
+        print('Extracting images from set{:02} ...'.format(i))
+        for j in sorted(os.listdir(img_set_path)):
+            imgs_path = os.path.join(img_set_path, j)
+            imgs = read_seq(imgs_path)
+            for ix, img in enumerate(imgs):
+                img_name = 'img{:02}{}{:04}.jpg'.format(i, j[2:4], ix)
+                img_path = os.path.join(img_save_path, img_name)
+                open(img_path, 'wb+').write(img)
 
-    # print 'Images have been saved.'
+    print('Images have been saved.')
 
     # convert .vbb file into .pkl
     # example: anno['00']['00']['frames'][0][0]['pos']
     anno = defaultdict(dict)
-    for i in range(10, 11):
+    for i in range(num[0], num[1]):
         anno['{:02}'.format(i)] = defaultdict(dict)
         anno_set_path = os.path.join(dir_path, 'annotations',
                                      'set{:02}'.format(i))
         assert os.path.exists(anno_set_path), \
             'Not exists: '.format(anno_set_path)
-        print 'Extracting annotations from set{:02} ...'.format(i)
+        print('Extracting annotations from set{:02} ...'.format(i))
         for j in sorted(os.listdir(anno_set_path)):
             anno_path = os.path.join(anno_set_path, j)
             anno['{:02}'.format(i)][j[2:4]] = read_vbb(anno_path)
 
-    with open(anno_save_path, 'wb') as f:
+    with open(anno_save_path, 'w') as f:
         json.dump(anno, f)
 
-    print 'Annotations have been saved.'
+    print('Annotations have been saved.')
 
-    print 'Done, time spends: {}s'.format(int(time.time() - time_flag))
+    print('Done, time spends: {}s'.format(int(time.time() - time_flag)))
+
+
+if __name__ == '__main__':
+    # directory to store data
+    dir_path = './Caltech/data'
+    # convert(phase='test_', num=[10, 11])
+    convert(phase='train_', num=[0, 10])
+    

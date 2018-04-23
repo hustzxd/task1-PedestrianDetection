@@ -2,9 +2,9 @@
 
 > [download.BaiduYun](https://pan.baidu.com/s/1_gYK6iXQDxJnRwlmiTagFw)
 
-### INRIAPerson
+### ~~INRIAPerson~~
 
-> [homepage](http://pascal.inrialpes.fr/data/human/)
+> ~~[homepage](http://pascal.inrialpes.fr/data/human/)~~
 
 ### Caltech
 
@@ -22,7 +22,15 @@
 
 ![img5](mini_image_anno/img10001031.jpg)
 
-### DukeMTMC-reID
+#### Usage:
+
+1. Convert .seq to .jpg and convert .vbb to .json
+```
+	python convert_caltech.py
+```
+
+
+### ~~DukeMTMC-reID~~
 
 > [github.repo](https://github.com/layumi/DukeMTMC-reID_evaluation)
 

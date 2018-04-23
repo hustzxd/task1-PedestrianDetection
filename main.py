@@ -16,7 +16,10 @@ import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 from torch.autograd import Variable
 
-import models
+import attr
+from models.darknet import darknet19
+
+# import models
 # import torchvision.models as models
 
 import ipdb
@@ -27,18 +30,20 @@ import platform
 print('python version: {}'.format(platform.python_version()))
 print('PyTorch version: {}'.format(torch.__version__))
 
-model_names = sorted(name for name in models.__dict__
-    if name[0].islower() and not name.startswith("__")
-    and callable(models.__dict__[name]))
+# model_names = sorted(name for name in models.__dict__
+#     if name[0].islower() and not name.startswith("__")
+#     and callable(models.__dict__[name]))
+
+model_names = ['darknet19']
 
 parser = argparse.ArgumentParser(description='PyTorch Object Detection Training')
 parser.add_argument('--data', '-d',  metavar='DIR', default='./data/ILSVRC2012',
                     help='path to dataset')
-parser.add_argument('--arch', '-a', metavar='ARCH', default='resnet18',
+parser.add_argument('--arch', '-a', metavar='ARCH', default=model_names[0],
                     choices=model_names,
                     help='model architecture: ' +
                         ' | '.join(model_names) +
-                        ' (default: resnet18)')
+                        ' (default: darknet19)')
 parser.add_argument('-j', '--workers', default=8, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
 parser.add_argument('--epochs', default=90, type=int, metavar='N',
@@ -74,38 +79,20 @@ def main():
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
     print('GPU ID: {}'.format(os.environ["CUDA_VISIBLE_DEVICES"]))
 
-    ipdb.set_trace()
-
     writer = SummaryWriter('runs_{}'.format(args.arch))
 
-    print('args.distributed: {}'.format(args.distributed))
     print('args.arch: {}'.format(args.arch))
-
-    if args.distributed:
-        dist.init_process_group(backend=args.dist_backend, init_method=args.dist_url,
-                                world_size=args.world_size)
 
     # create model
     if args.pretrained:
         print("=> using pre-trained model '{}'".format(args.arch))
-        model = models.__dict__[args.arch](pretrained=True)
+        model = getattr(attr, args.arch)(pretrained=True)
     else:
         print("=> creating model '{}'".format(args.arch))
-        model = models.__dict__[args.arch]()
+        model = getattr(attr, args.arch)(pretrained=False)
 
-    if not args.distributed:
-        if args.arch.startswith('alexnet') or args.arch.startswith('vgg'):
-            model.features = torch.nn.DataParallel(model.features)
-            model.cuda()
-        else:
-            model = model.cuda()
-            # model = torch.nn.DataParallel(model).cuda()
-            # print('torch.nn.DataParallel(model).cuda()')
-            #set_trace()
-    else:
-        model.cuda()
-        print('model.cuda()')
-        model = torch.nn.parallel.DistributedDataParallel(model)
+    model.cuda()
+
 
     # draw net graph in tensorboardX :)
     dummy_input = Variable(torch.rand(2, 1, 224, 224))

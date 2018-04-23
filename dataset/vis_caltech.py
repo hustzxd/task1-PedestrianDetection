@@ -52,7 +52,9 @@ def main():
 	img_dst_path_base = os.path.join(dst_images_dir, 'img1000{:04}.jpg')
 	anno_json = loadjson(ann_path)
 	anno_json = anno_json['10']['00']['frames']
-	for frame_key in anno_json.iterkeys():
+	# for frame_key in anno_json.iterkeys(): python 2
+	for frame_key in anno_json:	#python 3
+		# print(frame_key)
 		frame_key = int(frame_key)
 		img_path = img_path_base.format(frame_key)
 		img_dst_path = img_dst_path_base.format(frame_key)
@@ -67,14 +69,16 @@ def main():
 			lbl = anno['lbl']
 			print('lbl: {}'.format(lbl))
 			bbox = Bbox(pos[0], pos[1], pos[2], pos[3], category=lbl)
+			print(lbl)
 			bboxes.append(bbox)
 		draw(img_path, bboxes, img_dst_path)
 
 
 if __name__ == '__main__':
-	ann_path = 'test_annotations.json'
-	images_dir = 'mini_images'
-	dst_images_dir = 'mini_image_anno'
+	base = './Caltech/data'
+	ann_path = os.path.join(base, 'test_annotations.json')
+	images_dir = os.path.join(base, 'mini_images')
+	dst_images_dir = os.path.join(base, 'mini_image_anno')
 	if not os.path.exists(dst_images_dir):
 		print('mkdir')
 		os.mkdir(dst_images_dir)
