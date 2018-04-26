@@ -39,10 +39,11 @@ class CaltechAnnotationTransform(object):
     """
 
     def __init__(self, class_to_ind=None):
-        self.class_to_ind = class_to_ind or dict(
-            zip(CAL_CLASSES, range(len(CAL_CLASSES))))
+        pass
+        # self.class_to_ind = class_to_ind or dict(
+        # zip(CAL_CLASSES, range(len(CAL_CLASSES))))
 
-    def __call__(self, target):
+    def __call__(self, target, height, width):
         """
         Arguments:
             target (annotation) : the target annotation to be made usable
@@ -53,8 +54,9 @@ class CaltechAnnotationTransform(object):
         for anno in target:
             pos = anno['pos']  # [xmin, ymin, w, h]
             pos = [float(i) for i in pos]
-            bndbox = [pos[0], pos[1], pos[0] + pos[2], pos[1] + pos[3]]  # [xmin, ymin, xmax, ymax]
-            lbl = anno['lbl']
+            bndbox = [pos[0] / width, pos[1] / height,
+                      (pos[0] + pos[2]) / width, (pos[1] + pos[3]) / height]  # [xmin, ymin, xmax, ymax]
+            # lbl = anno['lbl']
             # print(lbl)
             label_idx = 0
             bndbox.append(label_idx)
@@ -64,7 +66,7 @@ class CaltechAnnotationTransform(object):
 
 
 class CALTECHDetection(data.Dataset):
-    """Caltech Detection Dataset Object
+    """
 
     input is image, target is annotation
 
@@ -85,7 +87,7 @@ class CALTECHDetection(data.Dataset):
         if image_dir is None:
             image_dir = 'test_images'
         if anno_file is None:
-            anno_file = 'test_annotations.json'
+            anno_file = 'mini_annotations.json'
         self.root = root
         self.image_dir = image_dir
         self.anno_file = anno_file
@@ -131,7 +133,7 @@ class CALTECHDetection(data.Dataset):
         if frame_key in target:
             target = target[frame_key]
             if self.target_transform is not None:
-                target = self.target_transform(target)
+                target = self.target_transform(target, width=width, height=height)
         else:
             raise Exception('anno not found.')
         if self.transform is not None and target is not None:
@@ -144,19 +146,20 @@ class CALTECHDetection(data.Dataset):
         return torch.from_numpy(img).permute(2, 0, 1), target, height, width
         # return torch.from_numpy(img), target, height, width
 
-    # def pull_image(self, index):
-    #     '''Returns the original image object at index in PIL form
-    #
-    #     Note: not using self.__getitem__(), as any transformations passed in
-    #     could mess up this functionality.
-    #
-    #     Argument:
-    #         index (int): index of img to show
-    #     Return:
-    #         PIL img
-    #     '''
-    #     img_id = self.ids[index]
-    #     return cv2.imread(self._imgpath % img_id, cv2.IMREAD_COLOR)
+    def pull_image(self, index):
+        """Returns the original image object at index in PIL form
+
+        Note: not using self.__getitem__(), as any transformations passed in
+        could mess up this functionality.
+
+        Argument:
+            index (int): index of img to show
+        Return:
+            PIL img
+        """
+        img_id = self.ids[index]
+        return cv2.imread(self._base_image_path.format(img_id), cv2.IMREAD_COLOR)
+
     #
     # def pull_anno(self, index):
     #     '''Returns the original annotation of image at index
@@ -192,4 +195,5 @@ class CALTECHDetection(data.Dataset):
 if __name__ == '__main__':
     caltech_dataload = CALTECHDetection(root=CAL_ROOT)
     print(caltech_dataload.__len__())
-    caltech_dataload.pull_item(0)
+    img, target, height, width = caltech_dataload.pull_item(0)
+    print(target, height, width)

@@ -38,7 +38,8 @@ def intersect(box_a, box_b):
       (tensor) intersection area, Shape: [A,B].
     """
     A = box_a.size(0)
-    B = box_b.size(0)
+    B = box_b.size(0) 
+    # ipdb.set_trace()
     max_xy = torch.min(box_a[:, 2:].unsqueeze(1).expand(A, B, 2),
                        box_b[:, 2:].unsqueeze(0).expand(A, B, 2))
     min_xy = torch.max(box_a[:, :2].unsqueeze(1).expand(A, B, 2),
@@ -86,6 +87,7 @@ def match(threshold, truths, priors, variances, labels, loc_t, conf_t, idx):
         The matched indices corresponding to 1)location and 2)confidence preds.
     """
     # jaccard index
+    # ipdb.set_trace()
     overlaps = jaccard(
         truths,
         point_form(priors)

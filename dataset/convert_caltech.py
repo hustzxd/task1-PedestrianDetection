@@ -84,7 +84,7 @@ def read_vbb(path):
     data['frames'] = defaultdict(list)
 
     for frame_id, obj in enumerate(objLists):
-        if len(obj) > 0:
+        if len(obj) > 0 and max_count is None or (max_count is not None and cnt <= max_count):
             for id, pos, occl, lock, posv in zip(obj['id'][0],
                                                  obj['pos'][0],
                                                  obj['occl'][0],
@@ -108,7 +108,8 @@ def read_vbb(path):
                 datum['init'] = int(objInit[datum['id']])
 
                 data['frames'][frame_id].append(datum)
-    # ipdb.set_trace()
+                if max_count is not None and cnt >= max_count:
+                    break
     return data
 
 def convert(phase='test_', num=[10, 11]):
@@ -118,7 +119,7 @@ def convert(phase='test_', num=[10, 11]):
     # num = [0, 10]
 
     time_flag = time.time()
-    # img_save_path = os.path.join(dir_path, phase + 'images')
+    img_save_path = os.path.join(dir_path, phase + 'images')
     anno_save_path = os.path.join(dir_path, phase + 'annotations.json')
     if os.path.exists(img_save_path):
         raise KeyError('Already exists : {}'.format(img_save_path))
@@ -140,7 +141,6 @@ def convert(phase='test_', num=[10, 11]):
                 img_name = 'img{:02}{}{:04}.jpg'.format(i, j[2:4], ix)
                 img_path = os.path.join(img_save_path, img_name)
                 open(img_path, 'wb+').write(img)
-
     print('Images have been saved.')
 
     # convert .vbb file into .pkl
@@ -155,7 +155,7 @@ def convert(phase='test_', num=[10, 11]):
         print('Extracting annotations from set{:02} ...'.format(i))
         for j in sorted(os.listdir(anno_set_path)):
             anno_path = os.path.join(anno_set_path, j)
-            anno['{:02}'.format(i)][j[2:4]] = read_vbb(anno_path)
+            anno['{:02}'.format(i)][j[2:4]] = read_vbb(anno_path, max_count)
 
     with open(anno_save_path, 'w') as f:
         json.dump(anno, f)
@@ -168,6 +168,6 @@ def convert(phase='test_', num=[10, 11]):
 if __name__ == '__main__':
     # directory to store data
     dir_path = './Caltech/data'
-    # convert(phase='test_', num=[10, 11])
+    convert(phase='test_', num=[10, 11])
     convert(phase='train_', num=[0, 10])
     

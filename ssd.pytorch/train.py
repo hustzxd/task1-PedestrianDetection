@@ -16,23 +16,23 @@ import numpy as np
 import argparse
 from tensorboardX import SummaryWriter
 
+import ipdb
+
 import platform
 
 print('python version: {}'.format(platform.python_version()))
 print('PyTorch version: {}'.format(torch.__version__))
-os.environ["CUDA_VISIBLE_DEVICES"] = '1'
-print('GPU ID: {}'.format(os.environ["CUDA_VISIBLE_DEVICES"]))
 
 parser = argparse.ArgumentParser(
     description='Single Shot MultiBox Detector Training With Pytorch')
-train_set = parser.add_mutually_exclusive_group()
+# train_set = parser.add_mutually_exclusive_group()
 parser.add_argument('--dataset', default='CALTECH', choices=['VOC', 'COCO', 'CALTECH'],
                     type=str, help='VOC, COCO or CALTECH')
 parser.add_argument('--dataset_root', default=CAL_ROOT,
                     help='Dataset root directory path')
 parser.add_argument('--basenet', default='vgg16_reducedfc.pth',
                     help='Pretrained base model')
-parser.add_argument('--batch_size', default=32, type=int,
+parser.add_argument('--batch_size', default=1, type=int,
                     help='Batch size for training')
 parser.add_argument('--resume', default=None, type=str,
                     help='Checkpoint state_dict file to resume training from')
@@ -50,16 +50,23 @@ parser.add_argument('--gamma', default=0.1, type=float,
                     help='Gamma update for SGD')
 parser.add_argument('--save_folder', default='weights/',
                     help='Directory for saving checkpoint models')
+parser.add_argument('--gpu_id', default='1', type=str,
+                    help='gpu id')
 
 args = parser.parse_args()
 
-torch.set_default_tensor_type('torch.cuda.FloatTensor')
+os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_id
+print('GPU ID: {}'.format(os.environ["CUDA_VISIBLE_DEVICES"]))
+
+# torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
 if not os.path.exists(args.save_folder):
     os.mkdir(args.save_folder)
 
 
 def train():
+    global writer
+    writer = SummaryWriter('runs_{}'.format(args.dataset))
     if args.dataset == 'COCO':
         if args.dataset_root == VOC_ROOT:
             if not os.path.exists(COCO_ROOT):
@@ -82,12 +89,10 @@ def train():
         cfg = cal
         dataset = CALTECHDetection(root=args.dataset_root,
                                    transform=SSDAugmentation(cfg['min_dim'], MEANS))
+        # dataset = CALTECHDetection(root=args.dataset_root)
 
     ssd_net = build_ssd('train', cfg['min_dim'], cfg['num_classes'])
     net = ssd_net
-
-    net = torch.nn.DataParallel(ssd_net)
-    cudnn.benchmark = True
 
     if args.resume:
         print('Resuming training, loading {}...'.format(args.resume))
@@ -98,6 +103,11 @@ def train():
         ssd_net.vgg.load_state_dict(vgg_weights)
 
     net = net.cuda()
+
+    # draw net graph in tensorboardX :)
+    dummy_input = Variable(torch.rand(1, 1, 300, 300))
+    dummy_input.cuda()
+    writer.add_graph(net, (dummy_input,))
 
     if not args.resume:
         print('Initializing weights...')
@@ -115,7 +125,6 @@ def train():
     # loss counters
     loc_loss = 0
     conf_loss = 0
-    epoch = 0
     print('Loading the dataset...')
 
     epoch_size = len(dataset) // args.batch_size
@@ -132,23 +141,20 @@ def train():
                                   pin_memory=True)
     # create batch iterator
     batch_iterator = iter(data_loader)  # error 517
+
     # for i, (input, target) in enumerate(train_loader)
     for iteration in range(args.start_iter, cfg['max_iter']):
-        # if args.visdom and iteration != 0 and (iteration % epoch_size == 0):
-        #     update_vis_plot(epoch, loc_loss, conf_loss, epoch_plot, None,
-        #                     'append', epoch_size)
-        #     # reset epoch loss counters
-        #     loc_loss = 0
-        #     conf_loss = 0
-        #     epoch += 1
 
         if iteration in cfg['lr_steps']:
             step_index += 1
-            adjust_learning_rate(optimizer, args.gamma, step_index)
-
-        # load train data
-        images, targets = next(batch_iterator)  # error
-
+            lr = adjust_learning_rate(optimizer, args.gamma, step_index)
+            writer.add_scalar('lr', lr, iteration)
+        try:
+            # load train data
+            images, targets = next(batch_iterator)  # error
+        except StopIteration:
+            batch_iterator = iter(data_loader)
+            images, targets = next(batch_iterator)  # error
         images = Variable(images.cuda())
         targets = [Variable(ann.cuda(), volatile=True) for ann in targets]
         # forward
@@ -164,18 +170,17 @@ def train():
         loc_loss += loss_l.data[0]
         conf_loss += loss_c.data[0]
 
+        writer.add_scalar('loss', loss.data[0], iteration)
         if iteration % 10 == 0:
             print('timer: %.4f sec.' % (t1 - t0))
-            # print('iter ' + repr(iteration) + ' || Loss: %.4f ||' % (loss.data[0]), end=' ')
-
-        # if args.visdom:
-        #     update_vis_plot(iteration, loss_l.data[0], loss_c.data[0],
-        #                     iter_plot, epoch_plot, 'append')
+            print('iter {:5d} Loss: {:4f}'.format(iteration, loss.data[0]))
 
         if iteration != 0 and iteration % 5000 == 0:
             print('Saving state, iter:', iteration)
             torch.save(ssd_net.state_dict(), 'weights/ssd300_CAL_' +
                        repr(iteration) + '.pth')
+            for name, param in net.named_parameters():
+                writer.add_histogram(name, param, iteration, bins="auto")
     torch.save(ssd_net.state_dict(),
                args.save_folder + '' + args.dataset + '.pth')
 
@@ -186,9 +191,10 @@ def adjust_learning_rate(optimizer, gamma, step):
     # Adapted from PyTorch Imagenet example:
     # https://github.com/pytorch/examples/blob/master/imagenet/main.py
     """
-    lr = args.lr * (gamma ** (step))
+    lr = args.lr * (gamma ** step)
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
+    return lr
 
 
 def xavier(param):

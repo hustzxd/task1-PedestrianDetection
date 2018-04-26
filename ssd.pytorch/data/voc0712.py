@@ -5,7 +5,8 @@ https://github.com/fmassa/vision/blob/voc_dataset/torchvision/datasets/voc.py
 
 Updated by: Ellis Brown, Max deGroot
 """
-from .config import HOME
+# from .config import HOME
+import os
 import os.path as osp
 import sys
 import torch
@@ -24,6 +25,7 @@ VOC_CLASSES = (  # always index 0
     'motorbike', 'person', 'pottedplant',
     'sheep', 'sofa', 'train', 'tvmonitor')
 
+HOME = os.path.expanduser("~")
 # note: if you used our download scripts, this should be right
 VOC_ROOT = osp.join(HOME, "datasets/PascalVOCData/VOCdevkit/")
 
@@ -182,3 +184,10 @@ class VOCDetection(data.Dataset):
             tensorized version of img, squeezed
         '''
         return torch.Tensor(self.pull_image(index)).unsqueeze_(0)
+
+
+if __name__ == '__main__':
+    dataset = VOCDetection(root=VOC_ROOT)
+    print(len(dataset))
+    img, target, height, width = dataset.pull_item(0)
+    print('target:{}\n[width, height]:[{},{}]'.format(target, width, height))
