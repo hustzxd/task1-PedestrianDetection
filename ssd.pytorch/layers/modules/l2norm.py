@@ -14,11 +14,15 @@ class L2Norm(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
-        init.constant(self.weight,self.gamma)
+        init.constant_(self.weight,self.gamma)
 
     def forward(self, x):
+        # x.shape(1, 512, 38, 38)
+        # norm.shape(1, 1, 38, 38)
         norm = x.pow(2).sum(dim=1, keepdim=True).sqrt()+self.eps
         #x /= norm
         x = torch.div(x,norm)
+        # x.shape(1, 512, 38, 38)
         out = self.weight.unsqueeze(0).unsqueeze(2).unsqueeze(3).expand_as(x) * x
+        # out.shape(1, 512, 38, 38)
         return out

@@ -1,4 +1,6 @@
 from .voc0712 import VOCDetection, VOCAnnotationTransform, VOC_CLASSES, VOC_ROOT
+from .voc0712_person import VOCPersonDetection
+from .coco_person import COCOPersonDetection
 from .caltech import CALTECHDetection, CAL_ROOT, CAL_CLASSES
 from .coco import COCODetection, COCOAnnotationTransform, COCO_CLASSES, COCO_ROOT, get_label_map
 from .config import *

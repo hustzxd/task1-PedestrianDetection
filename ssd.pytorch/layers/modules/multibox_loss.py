@@ -60,19 +60,17 @@ class MultiBoxLoss(nn.Module):
         """
         loc_data, conf_data, priors = predictions
         priors = priors.cuda() #why ????
-        # ipdb.set_trace()
-        num = loc_data.size(0)
+        num = loc_data.size(0) # batch size
         priors = priors[:loc_data.size(1), :]
         num_priors = (priors.size(0))
         num_classes = self.num_classes
-
         # match priors (default boxes) and ground truth boxes
-        loc_t = torch.Tensor(num, num_priors, 4)
-        conf_t = torch.LongTensor(num, num_priors)
+        loc_t = torch.Tensor(num, num_priors, 4) # [1, 8732, 4]
+        conf_t = torch.LongTensor(num, num_priors) # [1, 8732]
         for idx in range(num):
             truths = targets[idx][:, :-1].data
             labels = targets[idx][:, -1].data
-            defaults = priors.data
+            defaults = priors.data # [8732, 4]
             match(self.threshold, truths, defaults, self.variance, labels,
                   loc_t, conf_t, idx)
         if self.use_gpu:
@@ -113,7 +111,7 @@ class MultiBoxLoss(nn.Module):
         loss_c = F.cross_entropy(conf_p, targets_weighted, size_average=False)
 
         # Sum of losses: L(x,c,l,g) = (Lconf(x, c) + αLloc(x,l,g)) / N
-
+        # ipdb.set_trace()
         N = num_pos.data.sum()
         N = N.float()
         loss_l /= N

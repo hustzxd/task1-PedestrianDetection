@@ -3,8 +3,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 from layers import *
-from data import voc, coco
+from data import voc, coco, person_cfg
 import os
+import ipdb
 
 
 class SSD(nn.Module):
@@ -29,11 +30,18 @@ class SSD(nn.Module):
         super(SSD, self).__init__()
         self.phase = phase
         self.num_classes = num_classes
-        self.cfg = (coco, voc)[num_classes == 21]
+        # self.cfg = (coco, voc)[num_classes == 21] error
+        if num_classes == 21:
+            self.cfg = voc
+        elif num_classes == 81:
+            self.cfg = coco
+        elif num_classes == 2:
+            self.cfg = person_cfg
         self.priorbox = PriorBox(self.cfg)
-        self.priors = Variable(self.priorbox.forward(), volatile=True)
+        # self.priors = Variable(self.priorbox.forward(), volatile=True)
+        self.priors = Variable(self.priorbox.forward())
         self.size = size
-
+        # ipdb.set_trace()
         # SSD network
         self.vgg = nn.ModuleList(base)
         # Layer learns to scale the l2 normalized features from conv4_3
@@ -92,7 +100,7 @@ class SSD(nn.Module):
         for (x, l, c) in zip(sources, self.loc, self.conf):
             loc.append(l(x).permute(0, 2, 3, 1).contiguous())
             conf.append(c(x).permute(0, 2, 3, 1).contiguous())
-
+        # ipdb.set_trace()
         loc = torch.cat([o.view(o.size(0), -1) for o in loc], 1)
         conf = torch.cat([o.view(o.size(0), -1) for o in conf], 1)
         if self.phase == "test":
@@ -102,12 +110,12 @@ class SSD(nn.Module):
                              self.num_classes)),                # conf preds
                 self.priors.type(type(x.data))                  # default boxes
             )
-        else:
+        else: # train
             output = (
                 loc.view(loc.size(0), -1, 4),
                 conf.view(conf.size(0), -1, self.num_classes),
                 self.priors
-            )
+            )# self.priors.shape = [8734, 4]
         return output
 
     def load_weights(self, base_file):
@@ -140,6 +148,8 @@ def vgg(cfg, i, batch_norm=False):
             in_channels = v
     pool5 = nn.MaxPool2d(kernel_size=3, stride=1, padding=1)
     conv6 = nn.Conv2d(512, 1024, kernel_size=3, padding=6, dilation=6)
+    # dilation
+    # https://github.com/vdumoulin/conv_arithmetic/blob/master/README.md
     conv7 = nn.Conv2d(1024, 1024, kernel_size=1)
     layers += [pool5, conv6,
                nn.ReLU(inplace=True), conv7, nn.ReLU(inplace=True)]
@@ -154,6 +164,7 @@ def add_extras(cfg, i, batch_norm=False):
     for k, v in enumerate(cfg):
         if in_channels != 'S':
             if v == 'S':
+                # False 1 True 3
                 layers += [nn.Conv2d(in_channels, cfg[k + 1],
                            kernel_size=(1, 3)[flag], stride=2, padding=1)]
             else:
@@ -167,6 +178,7 @@ def multibox(vgg, extra_layers, cfg, num_classes):
     loc_layers = []
     conf_layers = []
     vgg_source = [21, -2]
+    # ipdb.set_trace()
     for k, v in enumerate(vgg_source):
         loc_layers += [nn.Conv2d(vgg[v].out_channels,
                                  cfg[k] * 4, kernel_size=3, padding=1)]

@@ -18,7 +18,7 @@ print('python version: {}'.format(platform.python_version()))
 print('PyTorch version: {}'.format(torch.__version__))
 
 parser = argparse.ArgumentParser(description='Single Shot MultiBox Detection')
-parser.add_argument('--trained_model', default='weights/ssd300_CAL_5000.pth',
+parser.add_argument('--trained_model', default='weights/ssd300_CAL_1000.pth',
                     type=str, help='Trained state_dict file path to open')
 parser.add_argument('--dataset_root', default=CAL_ROOT)
 parser.add_argument('--save_folder', default='vis_dir/', type=str,

@@ -13,17 +13,21 @@ import torch
 import torch.utils.data as data
 import cv2
 import numpy as np
+
+import ipdb
 if sys.version_info[0] == 2:
     import xml.etree.cElementTree as ET
 else:
     import xml.etree.ElementTree as ET
 
-VOC_CLASSES = (  # always index 0
-    'aeroplane', 'bicycle', 'bird', 'boat',
-    'bottle', 'bus', 'car', 'cat', 'chair',
-    'cow', 'diningtable', 'dog', 'horse',
-    'motorbike', 'person', 'pottedplant',
-    'sheep', 'sofa', 'train', 'tvmonitor')
+# VOC_CLASSES = (  # always index 0
+#     'aeroplane', 'bicycle', 'bird', 'boat',
+#     'bottle', 'bus', 'car', 'cat', 'chair',
+#     'cow', 'diningtable', 'dog', 'horse',
+#     'motorbike', 'person', 'pottedplant',
+#     'sheep', 'sofa', 'train', 'tvmonitor')
+
+VOC_CLASSES = (['person'])
 
 HOME = os.path.expanduser("~")
 # note: if you used our download scripts, this should be right
@@ -71,6 +75,10 @@ class VOCAnnotationTransform(object):
                 # scale height or width
                 cur_pt = cur_pt / width if i % 2 == 0 else cur_pt / height
                 bndbox.append(cur_pt)
+            # ipdb.set_trace()
+            if name not in self.class_to_ind:
+                # print(name)
+                continue
             label_idx = self.class_to_ind[name]
             bndbox.append(label_idx)
             res += [bndbox]  # [xmin, ymin, xmax, ymax, label_ind]
@@ -79,7 +87,15 @@ class VOCAnnotationTransform(object):
         return res  # [[xmin, ymin, xmax, ymax, label_ind], ... ]
 
 
-class VOCDetection(data.Dataset):
+def isPerson(line):
+    # ipdb.set_trace()
+    # print(line)
+    id = int(line.strip().split()[1])
+    # print(id)
+    return (id == 1)
+
+
+class VOCPersonDetection(data.Dataset):
     """VOC Detection Dataset Object
 
     input is image, target is annotation
@@ -96,22 +112,26 @@ class VOCDetection(data.Dataset):
             (default: 'VOC2007')
     """
 
-    def __init__(self, root,
-                 image_sets=[('2007', 'trainval'), ('2012', 'trainval')],
+    def __init__(self, root=VOC_ROOT,
+                 phase='train',
                  transform=None, target_transform=VOCAnnotationTransform(),
                  dataset_name='VOC0712'):
         self.root = root
-        self.image_set = image_sets
+        if phase == 'train':
+            self.image_set = [('2007', 'person_trainval'), ('2012', 'person_trainval')]
+        else:
+            self.image_set = [('2007', 'person_test')]
         self.transform = transform
         self.target_transform = target_transform
         self.name = dataset_name
         self._annopath = osp.join('%s', 'Annotations', '%s.xml')
         self._imgpath = osp.join('%s', 'JPEGImages', '%s.jpg')
         self.ids = list()
-        for (year, name) in image_sets:
+        for (year, name) in self.image_set:
             rootpath = osp.join(self.root, 'VOC' + year)
             for line in open(osp.join(rootpath, 'ImageSets', 'Main', name + '.txt')):
-                self.ids.append((rootpath, line.strip()))
+                if isPerson(line):
+                    self.ids.append((rootpath, line.strip().split()[0]))
 
     def __getitem__(self, index):
         im, gt, h, w = self.pull_item(index)
@@ -133,7 +153,8 @@ class VOCDetection(data.Dataset):
 
         if self.transform is not None:
             target = np.array(target)
-            img, boxes, labels = self.transform(img, target[:, :4], target[:, 4])
+            tmp = self.transform(img, target[:, :4], target[:, 4])
+            img, boxes, labels = tmp
             # to rgb
             img = img[:, :, (2, 1, 0)]
             # img = img.transpose(2, 0, 1)
@@ -187,7 +208,7 @@ class VOCDetection(data.Dataset):
 
 
 if __name__ == '__main__':
-    dataset = VOCDetection(root=VOC_ROOT)
+    dataset = VOCPersonDetection(phase='test')
     print(len(dataset))
     for i in range(20):
         img, target, height, width = dataset.pull_item(i)

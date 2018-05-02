@@ -4,10 +4,11 @@ import torch
 import torch.backends.cudnn as cudnn
 from torch.autograd import Variable
 
-from .data import VOC_ROOT, VOC_CLASSES as labelmap
-from .data import VOCAnnotationTransform, VOCDetection, BaseTransform, VOC_CLASSES
-from .ssd import build_ssd
+from data import VOC_ROOT, VOC_CLASSES as labelmap
+from data import VOCAnnotationTransform, VOCDetection, BaseTransform, VOC_CLASSES
+from ssd import build_ssd
 
+import ipdb
 import platform
 
 print('python version: {}'.format(platform.python_version()))
@@ -61,6 +62,7 @@ def test_net(save_folder, net, cuda, testset, transform, thresh):
         scale = torch.Tensor([img.shape[1], img.shape[0],
                               img.shape[1], img.shape[0]])
         pred_num = 0
+        ipdb.set_trace()
         for i in range(detections.size(1)):
             j = 0
             while detections[0, i, j, 0] >= 0.6:

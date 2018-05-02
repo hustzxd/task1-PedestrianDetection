@@ -85,9 +85,9 @@ class CALTECHDetection(data.Dataset):
     def __init__(self, root, image_dir=None, anno_file=None,
                  transform=None, target_transform=CaltechAnnotationTransform(), dataset_name='CALTECH'):
         if image_dir is None:
-            image_dir = 'test_images'
+            image_dir = 'train_images'
         if anno_file is None:
-            anno_file = 'mini_annotations.json'
+            anno_file = 'train_annotations.json'
         self.root = root
         self.image_dir = image_dir
         self.anno_file = anno_file
@@ -160,23 +160,22 @@ class CALTECHDetection(data.Dataset):
         img_id = self.ids[index]
         return cv2.imread(self._base_image_path.format(img_id), cv2.IMREAD_COLOR)
 
-    #
-    # def pull_anno(self, index):
-    #     '''Returns the original annotation of image at index
-    #
-    #     Note: not using self.__getitem__(), as any transformations passed in
-    #     could mess up this functionality.
-    #
-    #     Argument:
-    #         index (int): index of img to get annotation of
-    #     Return:
-    #         list:  [img_id, [(label, bbox coords),...]]
-    #             eg: ('001718', [('dog', (96, 13, 438, 332))])
-    #     '''
-    #     img_id = self.ids[index]
-    #     anno = ET.parse(self._annopath % img_id).getroot()
-    #     gt = self.target_transform(anno, 1, 1)
-    #     return img_id[1], gt
+    def pull_anno(self, index):
+        """Returns the original annotation of image at index
+
+        Note: not using self.__getitem__(), as any transformations passed in
+        could mess up this functionality.
+
+        Argument:
+            index (int): index of img to get annotation of
+        Return:
+            list:  [img_id, [(label, bbox coords),...]]
+                eg: ('001718', [('dog', (96, 13, 438, 332))])
+        """
+        img_id = self.ids[index]
+        # anno = ET.parse(self._annopath % img_id).getroot()
+        # gt = self.target_transform(anno, 1, 1)
+        # return img_id[1], gt
 
     def pull_tensor(self, index):
         '''Returns the original image at an index in tensor form
@@ -195,5 +194,6 @@ class CALTECHDetection(data.Dataset):
 if __name__ == '__main__':
     caltech_dataload = CALTECHDetection(root=CAL_ROOT)
     print(caltech_dataload.__len__())
-    img, target, height, width = caltech_dataload.pull_item(0)
-    print(target, height, width)
+    for i in range(20):
+        img, target, height, width = caltech_dataload.pull_item(i)
+        print(target, height, width)
