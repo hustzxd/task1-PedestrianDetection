@@ -1,8 +1,8 @@
 ## Pedestrian detection
 
-> Video processing analysis assignment
+> Video processing analysis assignment.
 
-> SSD for 
+> SSD for pedestrian detection in RAP dataset.
 
 ### Train
 - First download the fc-reduced VGG-16 PyTorch base network weights at: https://s3.amazonaws.com/amdegroot-models/vgg16_reducedfc.pth
@@ -24,8 +24,13 @@ cd ssd.pytorch
 ```bash
 cd ssh.pytorch
 # eval on Pascal VOC 2007
-./eval_voc_person.sh weigth/<you.pth>
+./eval_voc_person.sh weights/<you.pth>
+
+# eval on RAP test dataset
+python test_rap.py --trained_model weight/<you.pth>
 ```
+
+
 
 ### Performace
 

@@ -46,6 +46,21 @@ def loadCSV(filename):
         # print csv_reader
     return data
 
+def saveCSV(filename, data):
+    assert filename is not None
+    assert data is not None
+    is_csv = filename.find('.csv')
+    assert is_csv > 0
+
+    titles = []
+    for key, value in data[0].items():
+        titles.append(key)
+    with open(filename, 'w') as csv_file:
+        csv_writer = csv.DictWriter(csv_file, fieldnames=titles)
+        csv_writer.writeheader()
+        csv_writer.writerows(data)
+    return
+
 
 class RAPAnnotationTransform(object):
     """Transforms a VOC annotation into a Tensor of bbox coords and label index
@@ -101,7 +116,7 @@ class RAPDetection(data.Dataset):
             anno_file = 'detection_boundingboxes_train_refined.csv'
         else:
             image_dir = 'test_jpg'
-            anno_file = None
+            anno_file = 'test_empty.csv'
         
         self.root = RAP_ROOT            
         self.image_dir = image_dir
@@ -119,6 +134,7 @@ class RAPDetection(data.Dataset):
         return len(self.anno_data)
 
     def pull_item(self, index):
+        ipdb.set_trace()
         target = self.anno_data[index]
         index = target['index']
         filename = target['filename']
@@ -153,7 +169,7 @@ class RAPDetection(data.Dataset):
         index = target['index']
         filename = target['filename']
         img = cv2.imread(os.path.join(self.root, self.image_dir, filename), cv2.IMREAD_COLOR)
-        return img
+        return img, filename
     #
     # def pull_anno(self, index):
     #     '''Returns the original annotation of image at index
