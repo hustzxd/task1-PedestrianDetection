@@ -1,4 +1,3 @@
-from .config import HOME
 import os
 import os.path as osp
 import sys
@@ -9,6 +8,7 @@ import cv2
 import numpy as np
 import ipdb
 
+HOME  = os.path.expanduser("~")
 COCO_ROOT = osp.join(HOME, 'datasets/coco/')
 IMAGES = 'images'
 ANNOTATIONS = 'annotations'
@@ -205,5 +205,5 @@ if __name__ == '__main__':
     dataset = COCOPersonDetection(phase='train')
     print(len(dataset))
     for i in range(20):
-        img, target, height, width = dataset.pull_item(i)
+        img, target, height, width = dataset.pull_item(len(dataset) - 1 - i)
         print('target:{}\n[width, height]:[{},{}]'.format(target, width, height))

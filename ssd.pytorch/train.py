@@ -28,7 +28,8 @@ print('\nTest on python 3.6.4\t Pytorch 0.4.0\n')
 parser = argparse.ArgumentParser(
     description='Single Shot MultiBox Detector Training With Pytorch')
 # train_set = parser.add_mutually_exclusive_group()
-parser.add_argument('--dataset', default='VOC_person', choices=['VOC_person', 'COCO_person', 'RAP'],
+parser.add_argument('--dataset', default='VOC_person', 
+                choices=['VOC_person', 'COCO_person', 'VOC_COCO_person', 'RAP'],
                     type=str, help='VOC_person, COCO_person or RAP')
 parser.add_argument('--basenet', default='vgg16_reducedfc.pth',
                     help='Pretrained base model')
@@ -77,6 +78,11 @@ def train():
                                transform=SSDAugmentation(cfg['min_dim'],
                                                          MEANS))
         val_dataset = VOCPersonDetection(phase='test', transform=BaseTransform(300, MEANS))
+    elif args.dataset == 'VOC_COCO_person':
+        train_dataset = VOCCOCOPersonDetection(phase='train',
+                                transform=SSDAugmentation(cfg['min_dim'], MEANS))
+        val_dataset = VOCCOCOPersonDetection(phase='test',
+                                transform=BaseTransform(300, MEANS))
     elif args.dataset == 'RAP':
         print('not implement error')
         return
@@ -188,7 +194,7 @@ def train():
 
         if iteration != 0 and iteration % 5000 == 0:
             print('Saving state, iter:', iteration)
-            torch.save(ssd_net.state_dict(), 'weights/ssd300_{}_'.format(rgs.dataset) +
+            torch.save(ssd_net.state_dict(), 'weights/ssd300_{}_'.format(args.dataset) +
                        repr(iteration) + '.pth')
             for name, param in net.named_parameters():
                 writer.add_histogram(name, param, iteration, bins="auto")

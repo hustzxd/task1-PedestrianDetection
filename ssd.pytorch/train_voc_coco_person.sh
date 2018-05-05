@@ -1,0 +1,1 @@
+python train.py --dataset VOC_COCO_person --gpu_id 2

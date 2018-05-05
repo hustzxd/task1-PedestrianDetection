@@ -1,0 +1,1 @@
+python eval_person.py --trained_model $1

@@ -94,13 +94,16 @@ class RAPDetection(data.Dataset):
             (default: 'RAP')
     """
 
-    def __init__(self, root, image_dir=None, anno_file=None,
-                 transform=None, target_transform=RAPAnnotationTransform(), dataset_name='RAP'):
-        if image_dir is None:
+    def __init__(self, root=RAP_ROOT, phase='train', transform=None, 
+                target_transform=RAPAnnotationTransform(), dataset_name='RAP'):
+        if phase == 'train':
             image_dir = 'train_jpg'
-        if anno_file is None:
             anno_file = 'detection_boundingboxes_train_refined.csv'
-        self.root = root
+        else:
+            image_dir = 'test_jpg'
+            anno_file = None
+        
+        self.root = RAP_ROOT            
         self.image_dir = image_dir
         self.anno_file = anno_file
         self.transform = transform
@@ -129,25 +132,28 @@ class RAPDetection(data.Dataset):
             target = np.array(target)
             img, boxes, labels = self.transform(img, target[:, :4], target[:, 4])
             # to rgb
-            # img = img[:, :, (2, 1, 0)]  # why bgr to rgb???
+            img = img[:, :, (2, 1, 0)]  # why bgr to rgb???
             # img = img.transpose(2, 0, 1)
             target = np.hstack((boxes, np.expand_dims(labels, axis=1)))
         return torch.from_numpy(img).permute(2, 0, 1), target, height, width
         # return torch.from_numpy(img), target, height, width
 
-    # def pull_image(self, index):
-    #     '''Returns the original image object at index in PIL form
-    #
-    #     Note: not using self.__getitem__(), as any transformations passed in
-    #     could mess up this functionality.
-    #
-    #     Argument:
-    #         index (int): index of img to show
-    #     Return:
-    #         PIL img
-    #     '''
-    #     img_id = self.ids[index]
-    #     return cv2.imread(self._imgpath % img_id, cv2.IMREAD_COLOR)
+    def pull_image(self, index):
+        '''Returns the original image object at index in PIL form
+    
+        Note: not using self.__getitem__(), as any transformations passed in
+        could mess up this functionality.
+    
+        Argument:
+            index (int): index of img to show
+        Return:
+            PIL img
+        '''
+        target = self.anno_data[index]
+        index = target['index']
+        filename = target['filename']
+        img = cv2.imread(os.path.join(self.root, self.image_dir, filename), cv2.IMREAD_COLOR)
+        return img
     #
     # def pull_anno(self, index):
     #     '''Returns the original annotation of image at index
@@ -181,7 +187,8 @@ class RAPDetection(data.Dataset):
 
 
 if __name__ == '__main__':
-    rap_dataset = RAPDetection(root=RAP_ROOT)
-    print(rap_dataset.__len__())
-    im, gt = rap_dataset.__getitem__(0)
-    print(gt)
+    dataset = RAPDetection()
+    print(len(dataset))
+    for i in range(20):
+        img, target, height, width = dataset.pull_item(i)
+        print('target:{}\n[width, height]:[{},{}]'.format(target, width, height))
