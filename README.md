@@ -27,7 +27,7 @@ cd ssh.pytorch
 ./eval_voc_person.sh weights/<you.pth>
 
 # eval on RAP test dataset
-python test_rap.py --trained_model weight/<you.pth>
+./test_rap.sh weights/<you.pth>
 ```
 
 

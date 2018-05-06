@@ -9,6 +9,7 @@ import torch.backends.cudnn as cudnn
 from torch.autograd import Variable
 import numpy as np
 import cv2
+import csv
 from ssd import build_ssd
 
 # from matplotlib import pyplot as plt
@@ -23,7 +24,7 @@ parser.add_argument('--trained_model', default='weights/ssd300_VOC_person_AP@77.
                     type=str, help='Trained state_dict file path to open')
 parser.add_argument('--save_folder', default='eval/', type=str,
                     help='Dir to save results')
-parser.add_argument('--visual_threshold', default=0.6, type=float,
+parser.add_argument('--threshold', default=0.01, type=float,
                     help='Final confidence threshold')
 args = parser.parse_args()
 
@@ -60,6 +61,8 @@ def test_rap():
     index = 0
     start = time.time()
     for i in range(len(testset)):
+        # if i > 100:
+            # break
         if i % 20 == 0:
             print('Testing image {}/{}'.format(i+1, len(testset)))
         image, filename = testset.pull_image(i)
@@ -80,8 +83,9 @@ def test_rap():
         scale = torch.Tensor(rgb_image.shape[1::-1]).repeat(2)
         for i in range(detections.size(1)):
             j = 0
-            while detections[0,i,j,0] >= 0.3:
-                score = detections[0,i,j,0]
+            while detections[0,i,j,0] >= args.threshold:
+                # ipdb.set_trace()
+                score = detections[0,i,j,0].cpu().item()
                 pt = (detections[0,i,j,1:]*scale).cpu().numpy()
                 # coords = (pt[0], pt[1]), pt[2]-pt[0]+1, pt[3]-pt[1]+1
                 # color = colors[i]   
@@ -91,16 +95,18 @@ def test_rap():
                 # ipdb.set_trace()
                 res = {}
                 res['index'] = index
-                res['x'] = pt[0]
-                res['y'] = pt[1]
-                res['width'] = pt[2] - pt[0] + 1
-                res['height'] = pt[3] - pt[1] + 1
-                res['score'] = score
+                res['x'] = '{:.2f}'.format(pt[0])
+                res['y'] = '{:.2f}'.format(pt[1])
+                res['width'] = '{:.2f}'.format(pt[2] - pt[0] + 1)
+                res['height'] = '{:.2f}'.format(pt[3] - pt[1] + 1)
+                res['score'] = '{:.2f}'.format(score)
                 res['filename'] = filename
                 result.append(res)
                 index += 1
-    saveCSV(os.path.join(args.save_folder, 'reuslt.csv'), data)
+    res_filename = os.path.join(args.save_folder, '{}.csv'.format(args.trained_model.split('/')[-1]))
+    saveCSV(res_filename, result)
     end = time.time()
+    print('result has been saved in {}'.format(res_filename))
     print('Total Time: {}s'.format(end-start))
     print('FPS: {}'.format(len(testset) / (end-start)))
 if __name__ == '__main__':
