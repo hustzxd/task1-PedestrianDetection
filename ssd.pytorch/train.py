@@ -29,7 +29,7 @@ parser = argparse.ArgumentParser(
     description='Single Shot MultiBox Detector Training With Pytorch')
 # train_set = parser.add_mutually_exclusive_group()
 parser.add_argument('--dataset', default='VOC_person', 
-                choices=['VOC_person', 'COCO_person', 'VOC_COCO_person', 'RAP'],
+                choices=['VOC_person', 'COCO_person', 'VOC_COCO_person', 'VOC_COCO_RAP'],
                     type=str, help='VOC_person, COCO_person or RAP')
 parser.add_argument('--basenet', default='vgg16_reducedfc.pth',
                     help='Pretrained base model')
@@ -83,9 +83,10 @@ def train():
                                 transform=SSDAugmentation(cfg['min_dim'], MEANS))
         val_dataset = VOCCOCOPersonDetection(phase='test',
                                 transform=BaseTransform(300, MEANS))
-    elif args.dataset == 'RAP':
-        print('not implement error')
-        return
+    elif args.dataset == 'VOC_COCO_RAP':
+        train_dataset = VOCCOCORAPDetection(phase='train',
+                                transform=SSDAugmentation(cfg['min_dim'], MEANS))
+        
 
     ssd_net = build_ssd('train', cfg['min_dim'], cfg['num_classes'])
     net = ssd_net
@@ -174,7 +175,7 @@ def train():
         optimizer.step()
         # loc_loss += loss_l.data[0]
         # conf_loss += loss_c.data[0]
-        losses.update(loss.data[0].cpu(), images.size(0))
+        losses.update(loss.data[0].cpu())
         writer.add_scalar('loss', loss.data[0], iteration)
 
         # measure elapsed time

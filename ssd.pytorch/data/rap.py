@@ -22,7 +22,7 @@ HOME = os.path.expanduser("~")
 # note: if you used our download scripts, this should be right
 RAP_ROOT = osp.join(HOME, "datasets/RAP-Detection")
 """
-➜  RAP-Detection ls
+RAP-Detection ls
 detection_boundingboxes_train_refined.csv  file_operation.py  test_jpg  test_jpg.tar.gz  train_jpg  train_jpg.tar.gz
 """
 
@@ -125,6 +125,8 @@ class RAPDetection(data.Dataset):
         self.target_transform = target_transform
         self.name = dataset_name
         self.anno_data = loadCSV(os.path.join(root, anno_file))
+        self.ids = list()
+        self.ids = self.anno_data
 
     def __getitem__(self, index):
         im, gt, h, w = self.pull_item(index)
@@ -134,7 +136,7 @@ class RAPDetection(data.Dataset):
         return len(self.anno_data)
 
     def pull_item(self, index):
-        ipdb.set_trace()
+        # ipdb.set_trace()
         target = self.anno_data[index]
         index = target['index']
         filename = target['filename']
@@ -206,5 +208,5 @@ if __name__ == '__main__':
     dataset = RAPDetection()
     print(len(dataset))
     for i in range(20):
-        img, target, height, width = dataset.pull_item(i)
+        img, target, height, width = dataset.pull_item(len(dataset)-i-1)
         print('target:{}\n[width, height]:[{},{}]'.format(target, width, height))

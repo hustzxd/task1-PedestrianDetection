@@ -2,6 +2,7 @@ from .voc0712 import VOCDetection, VOCAnnotationTransform, VOC_CLASSES, VOC_ROOT
 from .voc0712_person import VOCPersonDetection
 from .coco_person import COCOPersonDetection
 from .voc0712_coco_person import VOCCOCOPersonDetection
+from .voc0712_coco_rap import VOCCOCORAPDetection
 from .rap import RAPDetection
 from .caltech import CALTECHDetection, CAL_ROOT, CAL_CLASSES
 from .coco import COCODetection, COCOAnnotationTransform, COCO_CLASSES, COCO_ROOT, get_label_map
