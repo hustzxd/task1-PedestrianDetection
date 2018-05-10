@@ -24,7 +24,7 @@ parser.add_argument('--trained_model', default='weights/ssd300_VOC_person_AP@77.
                     type=str, help='Trained state_dict file path to open')
 parser.add_argument('--save_folder', default='eval/', type=str,
                     help='Dir to save results')
-parser.add_argument('--threshold', default=0.01, type=float,
+parser.add_argument('--threshold', default=0.05, type=float,
                     help='Final confidence threshold')
 args = parser.parse_args()
 

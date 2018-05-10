@@ -5,7 +5,7 @@
 > SSD for pedestrian detection in RAP dataset.
 
 ### Train
-- First download the fc-reduced VGG-16 PyTorch base network weights at: https://s3.amazonaws.com/amdegroot-models/vgg16_reducedfc.pth
+- First download the fc-reduced VGG-16 PyTorch base network weights and trained weights at [BaiduYun](https://pan.baidu.com/s/1kgyaVRlt6Fch4nScSsk1BA)
 
 - By default, we assume you have downloaded the file in the ssd.pytorch/weights dir:
 
@@ -22,7 +22,7 @@ cd ssd.pytorch
 ### Evaluation
 
 ```bash
-cd ssh.pytorch
+cd ssd.pytorch
 # eval on Pascal VOC 2007
 ./eval_voc_person.sh weights/<you.pth>
 
@@ -39,7 +39,8 @@ We just evaluation AP of person in Pascal VOC 2007.
 | Training Data| Original | Only person(this project) |
 |:-:|:-:|:-:|
 | 07+12 | 76.2 % | 77.8% |
-| 07+12+COCO | 81.4% | running |
+| 07+12+COCO | 81.4% | 82.98% |
+| 07+12+COCO+RAP | --- | 82.49% |
 
 ## Reference
 - Wei Liu, et al. "SSD: Single Shot MultiBox Detector." [ECCV2016]((http://arxiv.org/abs/1512.02325)).
