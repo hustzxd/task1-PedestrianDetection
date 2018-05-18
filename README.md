@@ -36,7 +36,9 @@
 ./test_rap.sh weights/<span class="token operator">&lt;</span>you.pth<span class="token operator">&gt;</span>
 </code></pre>
 <h3 id="performace">Performace</h3>
-<p>We just evaluation AP of person in Pascal VOC 2007.</p>
+<p>
+
+We just evaluation AP of person in Pascal VOC 2007.</p>
 
 <table>
 <thead>
@@ -69,3 +71,6 @@
 <li>Thanks to <a href="https://github.com/amdegroot/ssd.pytorch">amdegroot</a>.</li>
 </ul>
 
+<!--stackedit_data:
+eyJoaXN0b3J5IjpbMTI1ODYwODYwNl19
+-->
