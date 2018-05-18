@@ -41,10 +41,10 @@ We just evaluation AP of person in Pascal VOC 2007.
 | 07+12 | 76.2 % | 77.8% |
 | 07+12+COCO | 81.4% | 82.98% |
 | 07+12+COCO+RAP | --- | 82.49% |
-
+$$\sigma^2$$
 ## Reference
 - Wei Liu, et al. "SSD: Single Shot MultiBox Detector." [ECCV2016]((http://arxiv.org/abs/1512.02325)).
 - Thanks to [amdegroot](https://github.com/amdegroot/ssd.pytorch).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTEyMDU5MDM5OV19
+eyJoaXN0b3J5IjpbMjA2MjI1MjExNiwxMTIwNTkwMzk5XX0=
 -->
