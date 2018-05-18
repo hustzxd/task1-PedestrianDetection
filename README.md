@@ -46,5 +46,5 @@ $$\sigma^2$$
 - Wei Liu, et al. "SSD: Single Shot MultiBox Detector." [ECCV2016]((http://arxiv.org/abs/1512.02325)).
 - Thanks to [amdegroot](https://github.com/amdegroot/ssd.pytorch).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMjA2MjI1MjExNiwxMTIwNTkwMzk5XX0=
+eyJoaXN0b3J5IjpbMjA2MjI1MjExNl19
 -->
