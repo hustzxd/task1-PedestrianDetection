@@ -45,3 +45,6 @@ We just evaluation AP of person in Pascal VOC 2007.
 ## Reference
 - Wei Liu, et al. "SSD: Single Shot MultiBox Detector." [ECCV2016]((http://arxiv.org/abs/1512.02325)).
 - Thanks to [amdegroot](https://github.com/amdegroot/ssd.pytorch).
+<!--stackedit_data:
+eyJoaXN0b3J5IjpbMTEyMDU5MDM5OV19
+-->
